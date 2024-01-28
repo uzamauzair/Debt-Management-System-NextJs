@@ -1,0 +1,66 @@
+generator client {
+    provider        = "prisma-client-js"
+    previewFeatures = ["fullTextSearch"]
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+// Define the Users table
+model Users {
+    user_id      Int            @id @default(autoincrement())
+    username     String
+    email        String         @unique
+    password     String
+    role_id      Int // Foreign Key to Roles table
+    created_time DateTime       @default(now())
+    deactivated  Boolean        @default(false)
+    role         Roles          @relation(fields: [role_id], references: [role_id])
+    transactions Transactions[]
+}
+
+// Define the Roles table
+model Roles {
+    role_id   Int     @id @default(autoincrement())
+    role_type String
+    // Define a one-to-many relationship with Users table
+    users     Users[]
+}
+
+// Define the Customers table
+model Customers {
+    customer_id   Int            @id @default(autoincrement())
+    customer_name String
+    phone_number  String
+    nic           String
+    address       String
+    nic_photo     String[]
+    created_time  DateTime       @default(now())
+    transactions  Transactions[]
+}
+
+// Define the Transactions table
+model Transactions {
+    transaction_id      Int      @id @default(autoincrement())
+    user_id             Int // Foreign Key to Users table
+    customer_id         Int // Foreign Key to Customers table
+    amount              Float
+    transaction_details String
+    transaction_type    String
+    transaction_date    DateTime @default(now())
+
+    // Define a one-to-one relationship with Users table
+    user Users @relation(fields: [user_id], references: [user_id])
+
+    // Define a one-to-one relationship with Customers table
+    customer Customers @relation(fields: [customer_id], references: [customer_id])
+}
+
+model Verification {
+    id        String   @id @default(cuid())
+    userId    Int
+    otp       String
+    createdAt DateTime @default(now())
+}
